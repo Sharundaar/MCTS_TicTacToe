@@ -8,6 +8,8 @@ using System.Collections.Generic;
 
 public class TicTacToe : MonoBehaviour {
 
+    public Text[] m_scoreLabels;
+
     private static TicTacToe s_Instance;
     public static TicTacToe Instance
     {
@@ -21,6 +23,8 @@ public class TicTacToe : MonoBehaviour {
         NONE,
         DRAW, // Little hack
     }
+
+    private String[] m_playerNames = new string[] { "X", "O", "", "" };
 
     Button[] m_uiCells = new Button[9];
     public Button[] UICells
@@ -42,13 +46,10 @@ public class TicTacToe : MonoBehaviour {
         var cells = FindObjectsOfType<Button>();
         foreach(var cell in cells)
         {
-            int cellIdx = 0;
-            if(int.TryParse(cell.name, out cellIdx))
+            int cellIdx = cell.GetComponent<GameCell>().cellId;
+            if(cellIdx >= 0 && cellIdx < 9)
             {
-                if(cellIdx >= 0 && cellIdx < 9)
-                {
-                    m_uiCells[cellIdx] = cell;
-                }
+                m_uiCells[cellIdx] = cell;
             }
         }
 
@@ -61,6 +62,14 @@ public class TicTacToe : MonoBehaviour {
     {
         m_players[Player.O] = new HumanPlayer(Player.O);
         m_players[Player.X] = new HumanPlayer(Player.X);
+        for(int i=0; i< m_scoreLabels.Length; i++)
+            m_scoreLabels[i].text = m_playerNames[i] + " : " + m_players[(Player)i].Score;
+    }
+
+    void UpdateScores()
+    {
+        for (int i = 0; i < m_scoreLabels.Length; i++)
+            m_scoreLabels[i].text = m_playerNames[i] + " : " + m_players[(Player)i].Score;
     }
 
     void Awake()
@@ -84,6 +93,7 @@ public class TicTacToe : MonoBehaviour {
             if(winner == Player.O || winner == Player.X)
             {
                 m_players[winner].Score++;
+                UpdateScores();
                 Restart();
             }
             else if(winner == Player.DRAW)
@@ -119,6 +129,9 @@ public class TicTacToe : MonoBehaviour {
         // 0 1 2
         // 3 4 5
         // 6 7 8
+        for(int i=0; i<3; i++)
+            print(m_cells[3*i] + " " + m_cells[3*i+1] + " " + m_cells[3*i+2]);
+        print("______");
 
         // first line
         if (m_cells[0] == m_cells[1] && m_cells[0] == m_cells[2])
@@ -154,9 +167,9 @@ public class TicTacToe : MonoBehaviour {
 
         // check for draw
         bool full = true;
-        int i = 0;
-        while (full && i < m_cells.Length)
-            full = m_cells[i++] != Player.NONE;
+        int k = 0;
+        while (full && k < m_cells.Length)
+            full = m_cells[k++] != Player.NONE;
 
         if (full)
             return Player.DRAW;
@@ -201,7 +214,6 @@ public class TicTacToe : MonoBehaviour {
 
     void OnGUI()
     {
-        GUI.Label(new Rect(10, 10, 120, 24), "O Player Score: " + m_players[Player.O].Score);
-        GUI.Label(new Rect(10, 10 + 24, 120, 24), "X Player Score: " + m_players[Player.X].Score);
+
     }
 }
